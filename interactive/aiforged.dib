@@ -1,0 +1,80 @@
+#!csharp
+
+#r "nuget: LarcAI.Core, 1.1.687.1620"
+#r "nuget: AIForged.SDK, 1.1.693.1310"
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+
+using AIForged;
+using AIForged.API;
+
+$"OS: {Environment.OSVersion} 64bit {Environment.Is64BitOperatingSystem}".Display();
+$"Net: {Environment.Version} 64bit {Environment.Is64BitProcess} Interactive: {Environment.UserInteractive}".Display();
+
+#!csharp
+
+string username = "<your username>";
+string password = "<your password>";
+var cfg = new AIForged.API.Config("https://dev.aiforged.com", username, password, "Demo");
+await cfg.Init(allowAutoRedirect: true);
+var ctx = new AIForged.API.Context(cfg);
+var user = await ctx.LoginAsync();
+var project = await ctx.GetProjectAsync(user.Id, 180);
+var service = await ctx.GetServiceAsync(42784);
+
+$"User {user.DisplayName} Id: {user.Id}".Display();
+$"Project {project.Name} Id: {project.Id}".Display();
+$"Service {service.Name} Id: {service.Id}".Display();
+
+#!csharp
+
+var docsresp = await ctx.DocumentClient.GetExtendedAsync(user.Id, project.Id, service.Id, UsageType.Outbox, new List<DocumentStatus> { DocumentStatus.Processed }, 
+    null, null, null, new DateTime(2021, 7, 1), DateTime.UtcNow, null, null, null, null, null, null, null, null, null, null, null, null);
+
+int docId = docsresp.Result.FirstOrDefault().Id;
+
+$"Docs {docsresp.Result.Count}, use doc {docId}".Display();
+
+var extarctresp = await ctx.ParametersClient.ExtractAsync(docId);
+var results = extarctresp.Result.Where(r => r.Category == ParameterDefinitionCategory.Results).Take(10).ToList();
+results.Display();
+
+var json = Newtonsoft.Json.JsonConvert.SerializeObject(results);
+json.Display();
+
+#!csharp
+
+var result = await ctx..ParametersClient.Extract(user.Id,
+    project.Id, 
+    service.Id, 
+    UsageType.Outbox, 
+    new List<DocumentStatus> { DocumentStatus.Processed, DocumentStatus.Verification, DocumentStatus.Error },
+    null, null, null,
+    start: new DateTime(2021, 7, 6),
+    end: new DateTime(2021, 7, 13), 
+    null, null, null, null, null, null, null);
+
+$"Records: {result.Result.Count}".Display();
+var json = System.Text.Json.JsonSerializer.Serialize(result.Result.Take(10));
+json.Display();
+//result.Result.Display("application/json");
+
+#!csharp
+
+var result = await ctx.VerificationClient.GetExtendedAsync(user.Id,
+    project.Id, 
+    service.Id, 
+    UsageType.Outbox, 
+    new List<DocumentStatus> { DocumentStatus.Processed, DocumentStatus.Verification, DocumentStatus.Error },
+    null, null, null,
+    start: new DateTime(2021, 7, 6),
+    end: new DateTime(2021, 7, 13), 
+    null, null, null, null, null, null, null);
+
+$"Records: {result.Result.Count}".Display();
+var json = System.Text.Json.JsonSerializer.Serialize(result.Result.Take(10));
+json.Display();
+//result.Result.Display("application/json");
