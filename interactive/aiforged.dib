@@ -1,7 +1,7 @@
 #!csharp
 
-#r "nuget: LarcAI.Core, 1.1.687.1620"
-#r "nuget: AIForged.SDK, 1.1.693.1310"
+#r "nuget: LarcAI.Core, 1.1.694.1856"
+#r "nuget: AIForged.SDK, 1.1.695.410"
 
 using System;
 using System.Collections.Generic;
@@ -18,11 +18,11 @@ $"Net: {Environment.Version} 64bit {Environment.Is64BitProcess} Interactive: {En
 
 string username = "<your username>";
 string password = "<your password>";
-var cfg = new AIForged.API.Config("https://dev.aiforged.com", username, password, "Demo");
+var cfg = new AIForged.API.Config("https://local.aiforged.com", username, password, "Demo");
 await cfg.Init(allowAutoRedirect: true);
 var ctx = new AIForged.API.Context(cfg);
 var user = await ctx.LoginAsync();
-var project = await ctx.GetProjectAsync(user.Id, 180);
+var project = await ctx.GetProjectAsync(user.Id, 80);
 var service = await ctx.GetServiceAsync(42784);
 
 $"User {user.DisplayName} Id: {user.Id}".Display();
@@ -47,31 +47,14 @@ json.Display();
 
 #!csharp
 
-var result = await ctx..ParametersClient.Extract(user.Id,
-    project.Id, 
-    service.Id, 
-    UsageType.Outbox, 
-    new List<DocumentStatus> { DocumentStatus.Processed, DocumentStatus.Verification, DocumentStatus.Error },
-    null, null, null,
-    start: new DateTime(2021, 7, 6),
-    end: new DateTime(2021, 7, 13), 
-    null, null, null, null, null, null, null);
-
-$"Records: {result.Result.Count}".Display();
-var json = System.Text.Json.JsonSerializer.Serialize(result.Result.Take(10));
-json.Display();
-//result.Result.Display("application/json");
-
-#!csharp
-
 var result = await ctx.VerificationClient.GetExtendedAsync(user.Id,
     project.Id, 
     service.Id, 
     UsageType.Outbox, 
     new List<DocumentStatus> { DocumentStatus.Processed, DocumentStatus.Verification, DocumentStatus.Error },
     null, null, null,
-    start: new DateTime(2021, 7, 6),
-    end: new DateTime(2021, 7, 13), 
+    start: new DateTime(2021, 11, 10),
+    end: new DateTime(2021, 11, 12), 
     null, null, null, null, null, null, null);
 
 $"Records: {result.Result.Count}".Display();
